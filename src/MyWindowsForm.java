@@ -5,6 +5,9 @@ import javax.swing.JComboBox;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import javax.swing.JSlider;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JMenu;
 
 
 public class MyWindowsForm {
@@ -39,6 +42,7 @@ public class MyWindowsForm {
 	 */
 	private void initialize() {
 		frame = new JFrame();
+		frame.setResizable(false);
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new GridLayout(1, 0, 0, 0));
