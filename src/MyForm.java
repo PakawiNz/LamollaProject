@@ -31,24 +31,26 @@ public class MyForm {
 						 "necklace_length","plating","stone_quality","remark"};
 		connectDB();
 		
-		printDB("customer_profile","*",head,null);
-		updateDB("customer_profile","price_mul","0.2","num","1234");
-		showDB("customer_profile","*",head,head,null);
-		
-		String ans[][] = readDB("customer_profile", "name",null,null,null);
+		//updateDB("customer_profile","price_mul","0.2","num","1234");
+		//showDB("customer_profile","*",head,head,null);
+		/*
+		String ans[][] = readWholeDB("customer_profile", "id");
 		for(int i = 0;i < ans.length;i++) {
-			for(int j = 0;j < ans[i].length;j++) {
-				if(ans[i][j] != null) {
-					System.out.print(ans[i][j]);
-					if(j != ans[i].length - 1) System.out.print(" - ");
-				}
+			for(int j = 0 ; j < ans[0].length ; j++){
+				if(ans[i] != null) System.out.print(ans[i][j]);
+				System.out.print(" - ");
 			}
 			System.out.println();
 		}
-		
-		
-		
-		
+		*/
+		String value[] = {"1112","2111222","113","4","5","6","7","8","9","10","11","12","13","14","15","16"};
+		insertDB("customer_profile", value);
+		//deleteDB("customer_profile", "num", "1111");
+//		String ans[] = readDB("customer_profile", "name");
+//		for(int i = 0;i < ans.length;i++) {
+//			if(ans[i] != null) System.out.println(ans[i]);
+//		}
+		showDB("customer_profile", "*", head, head, null);
 		
 		try {
 			if(s != null) {	s.close();	connect.close(); }
@@ -59,17 +61,18 @@ public class MyForm {
 		
 	}
 	
-	
 	public static void connectDB(){
-		String url = "jdbc:mysql://manonnont.com:3306/";
+		String dbType = "jdbc:mysql://";
+		String port = ":3306/";
+		
+		String url = "manonnont.com";
 		String dbName = "manonnon_lmtest";
 		String userName = "manonnon_lmtest"; 
 		String password = "robotz";
-	
 		
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
-			connect = DriverManager.getConnection(url + dbName,userName,password);
+			connect = DriverManager.getConnection(dbType + url + port + dbName,userName,password);
 			s = connect.createStatement();
 			
 		} catch (Exception e) {
@@ -79,15 +82,11 @@ public class MyForm {
 		
 	}
 	
-	public static int getColumnNumber(String tableName){
+	public static int getColumnCount(ResultSet rs){
 		int colN = 0;
 		try {
-			ResultSet rs = s.executeQuery("SELECT * FROM " + tableName);
-			ResultSetMetaData md = (ResultSetMetaData) rs.getMetaData();
-			
-			colN = md.getColumnCount();
+			colN = rs.getMetaData().getColumnCount();
 			System.out.println("Number of Column : "+ colN);
-			
 			
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
@@ -97,14 +96,13 @@ public class MyForm {
 		return colN;
 	}
 	
-	public static int getRowNumber(String tableName){
+	public static int getRowCount(ResultSet rs){
 		int rowN = 0;
 		try {
-			ResultSet rs = s.executeQuery("SELECT * FROM " + tableName);
-		
+			rs.last();
 			rowN = rs.getRow();
+			rs.beforeFirst();
 			System.out.println("Number of Row : " + rowN);
-			
 			
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
@@ -114,104 +112,145 @@ public class MyForm {
 		return rowN;
 	}
 	
-	public static String[] getColumnName(String tableName){
-		String ans[] = null;
+	public static String[] getColumnName(ResultSet rs){
 		try {
-			// show all data in head_search from tableName
-			// show     data in head_search from tableName that have head_main = value_main
-			
-			ResultSet rs = s.executeQuery("SELECT * FROM " + tableName);
 			ResultSetMetaData md = (ResultSetMetaData) rs.getMetaData();
-			
 			int col = md.getColumnCount();
 			System.out.println("Number of Column : "+ col);
 			
-			ans = new String[getColumnNumber(tableName)];
+			String[] ans = new String[col];
 			
 			System.out.print("Columns Name: ");
 			for (int i = 0;i < col;i++){
-				String col_name = md.getColumnName(i);
+				String col_name = md.getColumnName(i+1);
 				System.out.print(col_name + "  ");
 				ans[i] = col_name;
 			}
 			System.out.println();
 
-
+			return ans;
+			
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 			e.printStackTrace();
 		}
 		
-		return ans;
+		return null;
 	}
 	
-	public static void printDB(String tableName,String head_search,String modelHead[],String orderBy){	
-		try {	
-			String sql = "SELECT " + head_search +" FROM  " + tableName;
-			if(orderBy != null)	sql = sql + " ORDER BY "  + orderBy;
-			ResultSet rec = s.executeQuery(sql);			
-			
-			
-			while((rec!=null) && (rec.next())) {
-				for(int i = 0;i < modelHead.length;i++) {
-					System.out.print(rec.getString(modelHead[i]));
-					if(i != modelHead.length - 1) System.out.print(" - ");
-				} 
-				System.out.println("");
-			}
-			rec.close();
-
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-			e.printStackTrace();
-		}
-		
+	public static String[] readDB(String tableName,String head_search){
+		return readDB(tableName, head_search,null ,null,null);
 	}
 	
-	public static String[][] readDB(String tableName,String head_search,String head_main,String value_main,String orderBy){
-		//[row][column]
-		String ans[][];
-		if(head_search.equalsIgnoreCase("*")) ans = new String[10][2222222];  // how count row and column number
-		else ans = new String[10][1];
-		try {
-			int colN = getColumnNumber(tableName);
-			System.out.println(colN);
-			
-			// show all data in head_search from tableName
-			// show     data in head_search from tableName that have head_main = value_main
+	public static String[] readDB(String tableName,String head_search,String head_main,String value_main){
+		return readDB(tableName, head_search,head_main ,value_main,null);
+	}
+	
+	public static String[] readDB(String tableName,String head_search,String orderBy){
+		return readDB(tableName, head_search,null ,null,orderBy);
+	}
+	
+	public static String[] readDB(String tableName,String head_search,String head_main,String value_main,String orderBy){
+		try {		
 			String sql = "SELECT " + head_search +" FROM  " + tableName;
-			if((value_main != null) && (head_main != null)) sql = sql + " WHERE " + head_main + " = " + value_main;
-			if(orderBy != null)	sql = sql + " ORDER BY "  + orderBy;
-			ResultSet rec = s.executeQuery(sql);			
+			if((value_main != null) && (head_main != null)) sql += " WHERE " + head_main + " = " + value_main;
+			if(orderBy != null)	sql += " ORDER BY "  + orderBy;
+			ResultSet rs = s.executeQuery(sql);			
+			
+			String[] ans = new String[getRowCount(rs)];
 			
 			int i = 0;
-			int j = 0;
-			while((rec!=null) && (rec.next())) {
-				if(i == ans.length){ 
-					// if have SQL instuction that can count row and column number  , delete this!!!
-					String temp[][] = new String[ans.length * 2][];
-					// row num = ans.length , column num = ans[j].length
-					for(i = 0;i < ans.length;i++) for(j = 0;j < ans[i].length;j++) temp[i][j] = ans[i][j];
-					ans = temp;
-				}
-				for(i = 0;i < ans.length;i++) for(j = 0;j < ans[i].length;j++) System.out.println(ans[i][j] = rec.getString(head_search));
-				
-			}
-			//System.out.print(columnsNumber);
-			//rec.close();
-
+			while((rs!=null) && (rs.next()))
+				ans[i++] = rs.getString(1);
+			
+			rs.close();
+			return ans;
+			
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 			e.printStackTrace();
 		}
 		
+		return null;
+	}
+	
+	public static String[][] readDB(String tableName,String head_search[],String head_main,String value_main,String orderBy){
+		String ans[][] = new String[head_search.length][];
+		for(int i = 0;i < head_search.length;i++) ans[i] = readDB(tableName, head_search[i], head_main, value_main, orderBy);
 		return ans;
 	}
 	
-	public static void insertDB(){
+	public static String[][] readWholeDB(String tableName,String orderBy){
+		try {		
+			String sql = "SELECT * FROM  " + tableName;
+			if(orderBy != null)	sql += " ORDER BY "  + orderBy;
+			ResultSet rs = s.executeQuery(sql);			
+			
+			int rowN = getRowCount(rs);
+			int colN = getColumnCount(rs);
+			
+			String ans[][] = new String[rowN][colN];
+			int i = 0;
+			while((rs!=null) && (rs.next())){
+				for(int j = 0;j < colN;j++){
+					ans[i][j] = rs.getString(j+1);
+					System.out.println(ans[i][j]);
+				}
+				i++;
+			}	
+			rs.close();
+			return ans;
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
 		
 	}
+
+	public static void insertDB(String tableName,String value[]){
+		try {
+			String sql = "SELECT * FROM  " + tableName;
+			ResultSet rs = s.executeQuery(sql);
+			String head[] = getColumnName(rs);
+			
+			insertDB(tableName, head, value);
+			
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
+	}
 	
+	public static void insertDB(String tableName,String head[],String value[]){
+		try {
+			if(head.length != value.length) {
+				System.out.println("head.length != value.length");
+				return;
+			}
+			
+			String sql = "INSERT INTO " + tableName + "(";
+			for(int i = 0;i < head.length;i++) {
+				if(i != head.length - 1) sql += head[i] + ",";
+				else sql += head[i] + ")";
+			}
+			sql += " VALUES(";
+			for(int i = 0;i < value.length;i++) {
+				if(i != value.length - 1) sql += value[i] + ",";
+				else sql += value[i] + ") ;";
+			}
+			System.out.println("INSERT  >>"  +  sql);
+			s.execute(sql);
+			
+			System.out.println("Record Inserted Successfully >>  " + " " + sql );
+			 
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
 	public static void updateDB(String tableName,String head_change,String value_change,String head_main,String value_main){
 		try {
 			String sql = "UPDATE " + tableName +
@@ -227,8 +266,18 @@ public class MyForm {
 
 	}
 	
-	public static void deleteDB(){
-		
+	public static void deleteDB(String tableName,String head_main,String value_main){
+		try {
+			String sql = "DELETE FROM " + tableName + " WHERE " + head_main + " = " + value_main;
+
+			s.execute(sql);
+			System.out.println("Delete Successfully   >>  " + "" + sql );
+			 
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
+
 	}
 	
 	public static void createGUITable(JFrame frame){
@@ -265,16 +314,16 @@ public class MyForm {
 		try {
 			String sql = "SELECT " + head_search +" FROM  " + tableName;
 			if(orderBy != null)	sql = sql + " ORDER BY "  + orderBy;
-			ResultSet rec = s.executeQuery(sql);
+			ResultSet rs = s.executeQuery(sql);
 			
 			int row = 0;
-			while((rec != null) && (rec.next()) ) {
+			while((rs != null) && (rs.next()) ) {
 				int column = 0;
 				model.addRow(new Object[0]);
-				for(int i = 0;i < modelHead.length;i++,column++) model.setValueAt(rec.getString(modelHead[i]), row, column);
+				for(int i = 0;i < modelHead.length;i++,column++) model.setValueAt(rs.getString(modelHead[i]), row, column);
 				row++;
             }
-			rec.close();
+			rs.close();
          
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage());
